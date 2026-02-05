@@ -109,7 +109,7 @@ class InstagramScraper:
             }
             
             if end_cursor:
-                variables["data"]["after"] = end_cursor
+                variables["after"] = end_cursor
             
             posts_data = self._fetch_posts_page(variables)
             
