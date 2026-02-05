@@ -2,6 +2,12 @@
 
 A Python tool to scrape Instagram profile data and posts using GraphQL.
 
+
+# HOW TO Run
+edit max posts to get as well as username in scraper/main.py  file
+in terminal, run  python3 scraper/main.py  after installing the reuirements as outlined below, using pip3 and python3, or pip and python depending on your python version
+
+
 ## Setup
 
 # # # #INITIAL NOTES
