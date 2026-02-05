@@ -1,0 +1,68 @@
+Summary: 
+This document outlines a production-grade architecture for acquiring raw Instagram data at scale using HTTP-based scraping. The system is designed to continuously discover, schedule, and scrape public Instagram profiles and posts while maintaining reliability and avoiding detection.
+
+Data Access Strategy:
+ - Public Web Endpoints:
+ - Profile and Posts pages (instagram.com/{username}/) contain embedded JSON in <script> tags. (interesting)
+ - GraphQL endpoint (/graphql/query/) for pagination and additional data
+ - Actual Instagram API (https://www.instagram.com/api/v1/users/web_profile_info/?username={username}&hl=en) found through the browser console
+	
+Extraction Flow:
+ - Initial profile scrape to scrape embedded json
+ - Initial profile scrape to response from graphql queries
+ - Initial profile scrape to response from instagram API
+ 
+Technical Elements:
+ - Retry Behaviour
+ - Pagination Behaviour through cursor
+ - Different Data Types (Hashes, Json)
+ - Session Management(Mimiced Browser Headers, session Ids, Cookies, Proxy…)
+
+Scraper Structure
+
+Retry & Backoff Strategy
+ - Exponential Backoff: 
+ - Tenacity to increate by 30 seconds on hitting an exception
+
+Error Handling:
+ - 404 - Remove from queue, 429 rate limiting - update proxy, Server error - standard error, execute retry, network - standard retry with updated headers 
+ - If too many rate limits per proxy, embedded json not founds, consistent server errors, possible ban, need to update headers, and mark marked headers
+ - Have an active pool of X proxies, rotate proxies per Y requests, Have Geographical IP address distribution
+ - Multiple User Agents,
+ - Look for consistent null types extracted and adjust code
+
+     Queue Systems:
+ - Discovery, Profile, Post - Pre defined list of usernames to scrape from these 3 categories, scrape popular hashtags, follower threshold reach, already existing profiles scrape, and specific posts from a profile scrape. Prioritized scraping, sorted by relevance, frequency of new posts per popular tag, scheduling criteria
+
+Process:
+ - Pull username and last scrape data info from queue
+ - Acquire proxy and user agent from pool
+ - Proceed with scrape(profile update or latest posts)
+ - Store Results in DB with updated last scrape data timestamps
+ - Add or extract new usernames into the discovery queue
+
+Raw Data Collected:
+ - Have a pre defined model: example below - for specific data we want
+class InstagramProfile(BaseModel):
+   username: str
+   full_name: Optional[str] = None
+   biography: Optional[str] = None
+   follower_count: int
+   following_count: int
+   posts_count: int
+   profile_picture_url: Optional[str] = None
+   is_verified: bool
+   category: Optional[str] = None
+   external_url: Optional[str] = None
+
+
+
+ - Store JSon in a redis cache, with a scheduled install into a data lake/warehouse
+ - Decide on whether to store the actual post in cloud storage or just media URL - Use  case dependant
+
+ - Frequency / Scheduling
+ Prioritized scheduling, works with together queue based 
+ - Popular accounts, rescape them on the hourly bases based on their timezone
+ - New profiles, Once A day,
+ - Scheduling triggered by engagement(such as hashtag status, worldly events etc), time based scheduled, and queue priority
+ - Run Scrapes in parallel on different workes, for optimum extraction
