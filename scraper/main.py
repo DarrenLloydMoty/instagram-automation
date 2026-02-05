@@ -21,7 +21,6 @@ profile = scraper.get_profile(username = username)
 print(f"profile: {profile}")
 
 get_posts = scraper.get_posts(username = username, max_posts = max_posts)
-print(f"get_posts: {get_posts}")
 
 scraper.save_profile_and_posts(profile, get_posts, username)
 
