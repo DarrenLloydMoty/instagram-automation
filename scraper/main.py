@@ -14,8 +14,8 @@ proxies = []
 
 scraper = InstagramScraper(proxies=proxies)
 scraperHtml = InstagramScraperHTML()
-username = "lilbieber"
-max_posts = 200
+username = "imperio_dos_salgados_99"
+max_posts = 50
 # Get profile - returns InstagramProfile model
 profile = scraper.get_profile(username = username)
 print(f"profile: {profile}")
